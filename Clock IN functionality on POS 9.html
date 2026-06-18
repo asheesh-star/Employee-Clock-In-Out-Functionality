@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plum POS System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        plumDark: '#0A0C0F',
+                        plumCard: '#2E3642',
+                        plumBtnDark: '#222A35',
+                        plumKeypad: '#1E242B',
+                        plumCoral: '#E56B55',
+                        plumCyan: '#43BAD0',
+                        plumGreen: '#2EC28E',
+                        plumBlueButton: '#4585FF'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts for premium UI look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0C0F;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        /* Custom neon scanner animation */
+        @keyframes scan {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(180px); }
+        }
+        .scan-line {
+            animation: scan 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-full text-white overflow-hidden flex flex-col justify-between relative">
+
+    <!-- Subtle Background Watermark Logo on Login Screen (Aligned exactly to left side) -->
+    <div id="login-watermark" class="absolute left-[-5%] top-[20%] w-[45%] h-[60%] opacity-10 pointer-events-none transition-opacity duration-300">
+        <svg class="w-full h-full text-[#24162B]" viewBox="0 0 100 100" fill="currentColor">
+            <path d="M50 90C72.0914 90 90 72.0914 90 50C90 35 80 20 65 15C55 12 50 18 45 15C40 12 35 5 25 15C12 28 10 50 10 50C10 72.0914 27.9086 90 50 90Z"/>
+        </svg>
+    </div>
+
+    <!-- MAIN INTERACTIVE CONTAINER -->
+    <main class="flex-grow flex items-center justify-center relative w-full h-full">
+        
+        <!-- ==================== SCREEN 1: LOGIN (PIN ENTRY) ==================== -->
+        <div id="screen-login" class="w-full h-full flex flex-col justify-between p-12 select-none transition-all duration-300 relative">
+            
+            <!-- Absolute Top Left Logo Block -->
+            <div class="absolute top-12 left-12 flex items-center space-x-3">
+                <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 90C72.0914 90 90 72.0914 90 50C90 35 80 20 65 15C55 12 50 18 45 15C40 12 35 5 25 15C12 28 10 50 10 50C10 72.0914 27.9086 90 50 90Z" fill="url(#plum-grad)"/>
+                    <path d="M45 15C48 5 58 2 65 10C60 12 55 10 45 15Z" fill="#32D296"/>
+                    <defs>
+                        <linearGradient id="plum-grad" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#801F80" />
+                            <stop offset="50%" stop-color="#600F60" />
+                            <stop offset="100%" stop-color="#3A003D" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="text-4xl font-sans font-extrabold tracking-tight text-white">plum</span>
+            </div>
+
+            <!-- Absolute Top Right Info Header -->
+            <div class="absolute top-12 right-12 text-right">
+                <div class="text-white text-2xl font-bold tracking-wide">United States</div>
+                <div class="text-gray-400 text-lg font-semibold mt-1">2722</div>
+            </div>
+
+            <!-- Middle Login Box -->
+            <div class="flex-grow flex flex-col items-center justify-center space-y-6 mt-8">
+                <div class="text-center">
+                    <div class="text-xl font-medium text-gray-200 tracking-wide mb-2">Enter Pin</div>
+                    <!-- Display Pin Dots (White circles matching image_31f995.png) -->
+                    <div id="pin-dots" class="h-8 flex items-center justify-center space-x-3">
+                        <span class="text-gray-600 text-3xl">•</span>
+                        <span class="text-gray-600 text-3xl">•</span>
+                        <span class="text-gray-600 text-3xl">•</span>
+                        <span class="text-gray-600 text-3xl">•</span>
+                    </div>
+                </div>
+
+                <!-- Numpad Grid -->
+                <div class="w-full max-w-[340px] bg-transparent">
+                    <div class="grid grid-cols-3 gap-3 mb-3">
+                        <button onclick="pressPin('1')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">1</button>
+                        <button onclick="pressPin('2')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">2</button>
+                        <button onclick="pressPin('3')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">3</button>
+                        <button onclick="pressPin('4')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">4</button>
+                        <button onclick="pressPin('5')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">5</button>
+                        <button onclick="pressPin('6')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">6</button>
+                        <button onclick="pressPin('7')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">7</button>
+                        <button onclick="pressPin('8')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">8</button>
+                        <button onclick="pressPin('9')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">9</button>
+                        <button onclick="deletePin()" class="h-16 rounded-lg bg-[#252C36] text-plumCoral text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">Delete</button>
+                        <button onclick="pressPin('0')" class="h-16 rounded-lg bg-plumKeypad text-white text-2xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">0</button>
+                        <button onclick="clearPin()" class="h-16 rounded-lg bg-[#252C36] text-plumCyan text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">Clear</button>
+                    </div>
+                    <button onclick="submitPin()" class="w-full h-16 rounded-lg bg-[#222E3A] text-plumGreen hover:bg-[#253D4A] text-xl font-bold active:scale-95 transition-all flex items-center justify-center shadow-lg">
+                        Accept
+                    </button>
+                </div>
+
+                <!-- OR Separator -->
+                <div class="text-sm font-bold text-gray-500 tracking-widest py-1">OR</div>
+
+                <!-- Biometrics Options Pill Capsule Container -->
+                <div class="flex items-center justify-center bg-[#171D24] border border-[#232D3A] rounded-full py-3.5 px-8 space-x-8">
+                    <!-- Fingerprint Scan -->
+                    <button onclick="simulateBiometric()" class="text-gray-300 hover:text-white transition-colors" title="Biometric fingerprint auth">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 11c0-1.105-.895-2-2-2s-2 .895-2 2M12 11c0 1.105-.895 2-2 2s-2-.895-2-2m4 0h1m-1 4h1m-1-8h1m2-3a9.96 9.96 0 00-3.18 1.157M12 3a9.96 9.96 0 00-4.82 1.157m1.64 12.003h1.36m0 0a3 3 0 100-6h-1.36M12 21V3" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18.5a6.5 6.5 0 006.5-6.5V11a6.5 6.5 0 00-13 0v1a6.5 6.5 0 006.5 6.5z" />
+                        </svg>
+                    </button>
+                    <div class="h-6 w-[1.5px] bg-[#2E3743]"></div>
+                    <!-- Swipe Card Reader -->
+                    <button onclick="simulateCardSwipe()" class="text-gray-300 hover:text-white transition-colors" title="Swipe Card Authorization">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Absolute Bottom Left Help Desk Button -->
+            <div class="absolute bottom-12 left-12">
+                <button onclick="showHelpModal()" class="bg-[#758AA7] hover:bg-[#8AA0BD] text-white text-sm font-semibold px-6 py-3 rounded-full transition-all shadow-md">
+                    Help Desk
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ==================== NEW SCREEN: FACE RECOGNITION (BIOMETRIC SECURE SCREEN - Face 1 & 2) ==================== -->
+        <div id="screen-face-recognition" class="hidden w-full h-full flex flex-col justify-between p-12 select-none transition-all duration-300 relative">
+            
+            <!-- Logo Block -->
+            <div class="absolute top-12 left-12 flex items-center space-x-3">
+                <svg class="w-12 h-12" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 90C72.0914 90 90 72.0914 90 50C90 35 80 20 65 15C55 12 50 18 45 15C40 12 35 5 25 15C12 28 10 50 10 50C10 72.0914 27.9086 90 50 90Z" fill="url(#plum-grad-face)"/>
+                    <path d="M45 15C48 5 58 2 65 10C60 12 55 10 45 15Z" fill="#32D296"/>
+                    <defs>
+                        <linearGradient id="plum-grad-face" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#801F80" />
+                            <stop offset="50%" stop-color="#600F60" />
+                            <stop offset="100%" stop-color="#3A003D" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="text-4xl font-sans font-extrabold tracking-tight text-white">plum</span>
+            </div>
+
+            <!-- Absolute Top Right info -->
+            <div class="absolute top-12 right-12 text-right">
+                <div class="text-white text-2xl font-bold tracking-wide">Biometric Scan</div>
+                <div class="text-gray-400 text-lg font-semibold mt-1" id="face-id-subtitle">ID: 20</div>
+            </div>
+
+            <!-- Center Viewport Panel matching Face 1 & Face 2 design layouts -->
+            <div class="flex-grow flex flex-col items-center justify-center space-y-6 mt-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-extrabold tracking-wide text-white mb-2">Face Recognition</h2>
+                    <p class="text-sm text-gray-300" id="face-scan-status-text">Positioning scanner. Hold steady...</p>
+                </div>
+
+                <!-- High-Tech Biometric Viewfinder Frame -->
+                <div class="relative w-[220px] h-[220px] rounded-full border-4 border-plumCyan flex items-center justify-center overflow-hidden bg-black/60 shadow-[0_0_25px_rgba(67,186,208,0.3)]">
+                    
+                    <!-- Live video preview elements for modern devices -->
+                    <video id="webcam-preview" class="absolute inset-0 w-full h-full object-cover rounded-full scale-110" autoplay muted playsinline></video>
+                    
+                    <!-- High-tech grid overlays and animated scan bar line -->
+                    <div class="absolute inset-0 border border-dashed border-plumCyan/40 rounded-full pointer-events-none scale-95"></div>
+                    <div class="absolute inset-x-0 h-1 bg-gradient-to-r from-transparent via-plumCyan to-transparent opacity-80 scan-line pointer-events-none"></div>
+                    
+                    <!-- Vector face contour outline overlay placeholder (displays when camera starting or as fallback) -->
+                    <div id="webcam-fallback-svg" class="absolute inset-0 flex items-center justify-center text-plumCyan/30 pointer-events-none">
+                        <svg class="w-28 h-28 animate-[pulse_2s_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Step-by-Step checklist matching diagnostic parameters in Face 2 -->
+                <div class="w-full max-w-xs bg-[#1F252E] border border-[#2D3643] rounded-2xl p-4 space-y-3.5 shadow-lg">
+                    
+                    <!-- Diagnosis Row 1 -->
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-300 font-medium">Face Detected</span>
+                        <div id="face-check-1" class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-gray-500">
+                            <!-- Loader SVG / Green check -->
+                            <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.4" class="opacity-25"></circle>
+                                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Diagnosis Row 2 -->
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-300 font-medium">Profile Verification</span>
+                        <div id="face-check-2" class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-gray-500">
+                            <span class="text-xs font-bold text-gray-600">•</span>
+                        </div>
+                    </div>
+
+                    <!-- Diagnosis Row 3 -->
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-300 font-medium">System Authorization</span>
+                        <div id="face-check-3" class="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-gray-500">
+                            <span class="text-xs font-bold text-gray-600">•</span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            
+            <!-- Standard empty space block to balance screen alignments since bypass button was removed -->
+            <div class="h-10"></div>
+        </div>
+
+
+        <!-- ==================== POP-UP WINDOW 1: CHOOSE JOB CLASS ==================== -->
+        <div id="screen-job-class" class="hidden w-full max-w-2xl mx-auto flex flex-col items-center justify-center select-none transition-all duration-300">
+            <!-- Modal Box matching screenshot style -->
+            <div class="bg-[#3A4454] w-full rounded-[24px] p-8 shadow-2xl relative border border-[#4E5B6E]">
+                
+                <!-- Bold centered Title -->
+                <h2 class="text-4xl font-extrabold text-center mb-8 text-white tracking-wide">Choose Job Class</h2>
+
+                <!-- Job Class Grid: Exactly 3 in Row 1, 3 in Row 2 -->
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <!-- Row 1 -->
+                    <button onclick="selectJobClass('Supervisor')" id="class-Supervisor" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Supervisor
+                    </button>
+                    <button onclick="selectJobClass('Manager')" id="class-Manager" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Manager
+                    </button>
+                    <button onclick="selectJobClass('Time Clock Only')" id="class-TimeClock" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Time Clock Only
+                    </button>
+                    <!-- Row 2 -->
+                    <button onclick="selectJobClass('Bartender')" id="class-Bartender" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Bartender
+                    </button>
+                    <button onclick="selectJobClass('Server')" id="class-Server" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Server
+                    </button>
+                    <button onclick="selectJobClass('Cashier')" id="class-Cashier" class="class-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Cashier
+                    </button>
+                </div>
+
+                <!-- Footer: Pill Buttons repositioned - Cancel on Left, Green Next on Right (Initially Hidden) -->
+                <div class="flex justify-center items-center space-x-4 mt-4">
+                    <button onclick="goBackToLogin()" class="px-14 py-4 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold text-lg transition-colors tracking-wide shadow-lg">
+                        Cancel
+                    </button>
+                    <button id="btn-class-next" onclick="confirmJobClassSelection()" class="hidden px-14 py-4 rounded-full bg-[#2EC28E] hover:bg-emerald-600 text-white font-bold text-lg transition-colors tracking-wide shadow-lg">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================== POP-UP WINDOW 2: CHOOSE JOB CODE ==================== -->
+        <div id="screen-job-code" class="hidden w-full max-w-2xl mx-auto flex flex-col items-center justify-center select-none transition-all duration-300">
+            <!-- Modal Box matching style -->
+            <div class="bg-[#3A4454] w-full rounded-[24px] p-8 shadow-2xl relative border border-[#4E5B6E]">
+                
+                <!-- Bold centered Title -->
+                <h2 class="text-4xl font-extrabold text-center mb-8 text-white tracking-wide">Choose Job Code</h2>
+
+                <!-- Job Code Grid: Structured cleanly as 3 columns -->
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <!-- Row 1 -->
+                    <button onclick="selectJobCode('General Manager')" id="code-GM" class="code-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        General Manager
+                    </button>
+                    <button onclick="selectJobCode('Cook')" id="code-Cook" class="code-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Cook
+                    </button>
+                    <button onclick="selectJobCode('Dishwasher')" id="code-Dishwasher" class="code-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Dishwasher
+                    </button>
+                    <!-- Row 2 -->
+                    <button onclick="selectJobCode('Cashier')" id="code-Cashier" class="code-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Cashier
+                    </button>
+                    <button onclick="selectJobCode('Bartender')" id="code-Bartender" class="code-btn h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow">
+                        Bartender
+                    </button>
+                    <!-- Spacer -->
+                    <div class="h-20 bg-transparent"></div>
+                </div>
+
+                <!-- Footer: Pill Buttons repositioned - Back on Left, Green Next on Right (Initially Hidden) -->
+                <div class="flex justify-center items-center space-x-4 mt-4">
+                    <button onclick="goBackToClassSelect()" class="px-14 py-4 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold text-lg transition-colors tracking-wide shadow-lg">
+                        Back
+                    </button>
+                    <button id="btn-code-next" onclick="confirmJobCodeSelection()" class="hidden px-14 py-4 rounded-full bg-[#2EC28E] hover:bg-emerald-600 text-white font-bold text-lg transition-colors tracking-wide shadow-lg">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- ==================== SCREEN 3: TABLE MAP FLOOR LAYOUT (EXACT REPLICA OF image_357ec0.png) ==================== -->
+        <div id="screen-tables" class="hidden w-full h-full flex flex-col justify-between transition-all duration-300 relative bg-[#050608]">
+            <div class="flex-grow w-full h-full relative p-12">
+                
+                <!-- Circular blue tables 200, 201, 202 centered in a row at the top -->
+                <div class="absolute top-[18%] left-1/2 transform -translate-x-1/2 flex space-x-20">
+                    <button onclick="handleTableClick('200')" class="w-[78px] h-[78px] rounded-full bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg border-2 border-blue-400">
+                        200
+                    </button>
+                    <button onclick="handleTableClick('201')" class="w-[78px] h-[78px] rounded-full bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg border-2 border-blue-400">
+                        201
+                    </button>
+                    <button onclick="handleTableClick('202')" class="w-[78px] h-[78px] rounded-full bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg border-2 border-blue-400">
+                        202
+                    </button>
+                </div>
+
+                <!-- Square blue tables 102, 101, 100 vertically aligned on the left side -->
+                <div class="absolute left-20 top-[22%] flex flex-col space-y-12">
+                    <button onclick="handleTableClick('102')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        102
+                    </button>
+                    <button onclick="handleTableClick('101')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        101
+                    </button>
+                    <button onclick="handleTableClick('100')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-sm flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        100
+                    </button>
+                </div>
+
+                <!-- Square blue BAR tables (BAR 1, BAR 2, BAR 3) aligned horizontally in the bottom-right area -->
+                <div class="absolute bottom-[14%] right-24 flex space-x-6">
+                    <button onclick="handleTableClick('BAR 1')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-[11px] flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        BAR 1
+                    </button>
+                    <button onclick="handleTableClick('BAR 2')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-[11px] flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        BAR 2
+                    </button>
+                    <button onclick="handleTableClick('BAR 3')" class="w-16 h-16 bg-[#1a56ff] hover:opacity-85 active:scale-95 transition-all text-white font-bold text-[11px] flex items-center justify-center shadow-lg rounded border border-blue-400">
+                        BAR 3
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ==================== FUNCTIONS MODAL WINDOW (EXACT REPLICA OF Functions.jpg) ==================== -->
+        <div id="functions-modal" class="hidden fixed inset-0 z-40 bg-black/75 flex items-center justify-center p-4">
+            <div class="bg-[#3A4454] w-full max-w-4xl rounded-[24px] p-6 shadow-2xl relative border border-[#4E5B6E] animate-[fadeIn_0.2s_ease-out]">
+                
+                <!-- Title Header -->
+                <h2 class="text-3xl font-extrabold text-center mb-6 text-white tracking-wide">Functions</h2>
+
+                <!-- Grid of Buttons: 4 Column Layout perfectly matched to Functions.jpg -->
+                <div class="space-y-6">
+                    
+                    <!-- First Block (Gray Buttons) -->
+                    <div class="grid grid-cols-4 gap-3.5">
+                        <button onclick="triggerFunction('Reports')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Reports
+                        </button>
+                        <button onclick="triggerFunction('86')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            86
+                        </button>
+                        <button onclick="triggerFunction('Recall Pay In/Out')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Recall Pay In/Out
+                        </button>
+                        <button onclick="triggerFunction('Change Terminal')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Change Terminal
+                        </button>
+
+                        <button onclick="triggerFunction('Employees')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Employees
+                        </button>
+                        <button onclick="triggerFunction('Support')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Support
+                        </button>
+                        <button onclick="triggerFunction('Display Settings')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Display Settings
+                        </button>
+                        <button onclick="triggerFunction('Timeslip Summary')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Timeslip(s) Summary
+                        </button>
+
+                        <button onclick="triggerFunction('Online Ordering')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Online Ordering
+                        </button>
+                        <button onclick="triggerFunction('Language')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Language
+                        </button>
+                        <button onclick="triggerFunction('Close Day')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Close Day
+                        </button>
+                        <button onclick="triggerFunction('Safe Count')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Safe Count
+                        </button>
+                    </div>
+
+                    <!-- Visual Section Divider -->
+                    <div class="h-[1px] bg-[#4E5B6E] w-full"></div>
+
+                    <!-- Second Block (Action Buttons) -->
+                    <div class="grid grid-cols-4 gap-3.5">
+                        <button onclick="triggerFunction('Print')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Print
+                        </button>
+                        <button onclick="triggerFunction('Open Cash Drawer')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Open Cash Drawer
+                        </button>
+                        <button class="h-14 rounded-lg bg-[#252C36] text-gray-500 font-bold cursor-not-allowed text-[13px] sm:text-sm shadow flex items-center justify-center" disabled>
+                            Release Cash Drawer
+                        </button>
+                        <button onclick="triggerFunction('Recall Order')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Recall Order
+                        </button>
+
+                        <button onclick="triggerFunction('Pay In/Out')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Pay In/Out
+                        </button>
+                        <button onclick="triggerFunction('Orders')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Orders
+                        </button>
+                        <!-- Timeslip Button (This navigates to the detailed Timeslip detail Screen 3!) -->
+                        <button onclick="navigateToTimeslipScreen()" class="h-14 rounded-lg bg-[#4585FF] text-white font-bold hover:bg-blue-600 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center animate-pulse">
+                            Timeslip
+                        </button>
+                        <button onclick="triggerFunction('House Account')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            House Account
+                        </button>
+
+                        <button onclick="triggerFunction('Gift Card Balance')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Gift Card Balance
+                        </button>
+                        <button onclick="triggerFunction('Gift Card History')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Gift Card History
+                        </button>
+                        <button onclick="triggerFunction('Gift Card Cash Out')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Gift Card Cash Out
+                        </button>
+                        <button onclick="triggerFunction('Search & Issue Refund')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Search & Issue Refund
+                        </button>
+
+                        <button onclick="triggerFunction('Create Refund Order')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center">
+                            Create Refund Order
+                        </button>
+                        <button onclick="triggerFunction('Help Desk')" class="h-14 rounded-lg bg-[#252C36] text-gray-200 font-bold hover:bg-slate-700 transition-all text-[13px] sm:text-sm shadow flex items-center justify-center col-span-2">
+                            Help Desk
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Footer Pill Cancel Center Button -->
+                <div class="flex justify-center mt-6">
+                    <button onclick="closeFunctionsModal()" class="px-14 py-3.5 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold text-base transition-colors shadow-md">
+                        Cancel
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+
+        <!-- ==================== SCREEN 4: DETAILED TIMESLIP VIEW (EXACT REPLICA OF Timeslip Screen.jpg) ==================== -->
+        <div id="screen-timeslip-detail" class="hidden w-full h-full flex flex-col justify-between transition-all duration-300 relative bg-[#0F1319]">
+            
+            <!-- Main Content Card Center wrapper -->
+            <div class="flex-grow w-full flex items-center justify-center p-8 overflow-y-auto">
+                
+                <!-- Main Timeslip Gray Card -->
+                <div class="bg-[#2D3540] w-full max-w-xl rounded-2xl p-6 border border-[#3E4A5B] shadow-2xl max-h-[80vh] overflow-y-auto">
+                    
+                    <!-- Top header: Employee Name -->
+                    <div class="text-center mb-4">
+                        <h2 id="timeslip-employee-name" class="text-2xl font-bold tracking-wide text-white">Dummy Employee</h2>
+                    </div>
+
+                    <!-- Inner Status Header Bar (Date left, Open cash right with pencil) -->
+                    <div class="bg-[#1F252E] rounded-xl p-4 mb-4 flex justify-between items-center text-sm border border-[#2D3643]">
+                        <div>
+                            <div class="font-bold text-gray-100 text-base" id="timeslip-start-time-text">05/22/2026 8:43a</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 font-medium">Start of Day</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center space-x-2 justify-end">
+                                <span class="font-bold text-[#2EC28E] text-lg">$</span>
+                                <input type="number" id="input-open-cash" value="100.00" step="0.01" class="w-20 bg-transparent text-[#2EC28E] text-lg font-bold border-b border-[#2EC28E] focus:outline-none focus:border-white text-right" onchange="recalculateTimeslipTotals()">
+                                <!-- Yellow Pencil icon -->
+                                <button onclick="focusOpenCashInput()" class="text-amber-400 hover:text-amber-300 focus:outline-none" title="Edit Open Day Cash">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="text-[11px] text-gray-400 mt-0.5 font-medium">Open Day Cash</div>
+                        </div>
+                    </div>
+
+                    <!-- Main Param Lists (ID#, Job, Breaks, etc.) matching Timeslip Screen.jpg -->
+                    <div class="space-y-1.5 text-sm">
+                        
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">ID#</span>
+                            <span class="font-bold text-white text-base">20</span>
+                        </div>
+
+                        <!-- Job Class section: Dynamically updated from Job Class Screen -->
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Job Class</span>
+                            <span id="timeslip-job-class-label" class="font-bold text-white text-base">Manager</span>
+                        </div>
+
+                        <!-- Job Code section: Positioned underneath Job Class -->
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Job Code</span>
+                            <span id="timeslip-job-code-label" class="font-bold text-white text-base">Manager</span>
+                        </div>
+
+                        <!-- Segregated Breaks Parameters (Rest vs Meal) -->
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Rest Breaks (Count)</span>
+                            <span id="timeslip-rest-breaks-count" class="font-bold text-white text-base">0</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Rest Break Total </span>
+                            <span id="timeslip-rest-break-total" class="font-bold text-white text-base">00:00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Meal Breaks (Count)</span>
+                            <span id="timeslip-meal-breaks-count" class="font-bold text-white text-base">0</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Meal Break Total </span>
+                            <span id="timeslip-meal-break-total" class="font-bold text-white text-base">00:00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Cash Sales</span>
+                            <span class="font-bold text-white text-base">0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Paid In</span>
+                            <span class="font-bold text-white text-base">0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Paid Out</span>
+                            <span class="font-bold text-white text-base">0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-1.5 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Cash Drop</span>
+                            <div class="flex items-center space-x-3">
+                                <button onclick="triggerFunction('Cash Drop View')" class="bg-plumBtnDark text-gray-200 hover:bg-slate-700 text-xs font-bold px-3 py-1 rounded border border-gray-600">
+                                    View
+                                </button>
+                                <span class="font-bold text-white text-base">0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 border-b border-gray-700/50 px-2">
+                            <span class="text-gray-300 font-medium">Cash Due</span>
+                            <span class="font-bold text-white text-base">0.00</span>
+                        </div>
+
+                        <div class="flex justify-between items-center py-2 px-2">
+                            <span class="text-gray-300 font-medium">Close Cash</span>
+                            <span id="timeslip-close-cash-val" class="font-bold text-white text-base">0.00</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    
+    <!-- ==================== SYSTEM THEMED NOTIFICATION MODAL ==================== -->
+    <div id="custom-alert-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-[#2E3642] border border-[#3E4A5B] rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl animate-[fadeIn_0.15s_ease-out]">
+            <div id="alert-icon-container" class="mx-auto flex items-center justify-center w-14 h-14 rounded-full bg-blue-950/40 border border-blue-800/40 text-blue-400 mb-4">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h3 id="alert-title" class="text-xl font-bold text-white mb-2">Notice</h3>
+            <p id="alert-message" class="text-sm text-gray-300 mb-6"></p>
+            <button onclick="closeAlert()" class="w-full py-3.5 rounded-lg bg-plumBlueButton hover:bg-blue-600 text-white font-bold transition-colors">
+                Confirm
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ==================== INTERACTIVE BREAK SELECTION MODAL ==================== -->
+    <div id="break-type-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-[#2E3642] border border-[#3E4A5B] rounded-[24px] max-w-sm w-full p-6 text-center shadow-2xl animate-[fadeIn_0.15s_ease-out]">
+            <h3 class="text-2xl font-bold text-white mb-6 tracking-wide">Select Break Type</h3>
+            <div class="flex flex-col space-y-3.5">
+                <button onclick="confirmStartBreak('Rest Break')" class="w-full py-4 rounded-full bg-plumBlueButton hover:bg-blue-600 text-white font-bold transition-colors text-base shadow-lg">
+                    Rest Break
+                </button>
+                <button onclick="confirmStartBreak('Meal Break')" class="w-full py-4 rounded-full bg-plumGreen hover:bg-emerald-600 text-white font-bold transition-colors text-base shadow-lg">
+                    Meal Break
+                </button>
+                <button onclick="closeBreakTypeModal()" class="w-full py-4 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold transition-colors text-base shadow-lg mt-2">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== POP-UP WINDOW: ACTIVE BREAK LOGIN PROMPT MODAL ==================== -->
+    <div id="login-breakout-modal" class="hidden fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4">
+        <div class="bg-[#2E3642] border border-[#3E4A5B] rounded-[24px] max-w-md w-full p-6 text-center shadow-2xl animate-[fadeIn_0.15s_ease-out]">
+            <div class="mx-auto flex items-center justify-center w-14 h-14 rounded-full bg-amber-950/40 border border-amber-800/40 text-amber-400 mb-4 animate-pulse">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <p id="login-breakout-msg" class="text-sm text-gray-300 mb-6">You are currently on an active break.</p>
+            <div class="flex flex-col space-y-3">
+                <button onclick="handleLoginBreakoutAction('stop')" class="w-full py-4 rounded-full bg-[#2EC28E] hover:bg-emerald-600 text-white font-bold transition-colors text-base shadow-lg">
+                    End Break
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== POP-UP WINDOW: SWITCH JOB CODE ==================== -->
+    <div id="screen-switch-job-code" class="hidden fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4">
+        <div class="bg-[#3A4454] w-full max-w-2xl rounded-[24px] p-8 shadow-2xl relative border border-[#4E5B6E] animate-[fadeIn_0.15s_ease-out]">
+            <h2 class="text-4xl font-extrabold text-center mb-8 text-white tracking-wide">Switch Job Code</h2>
+            <div id="switch-job-code-grid" class="grid grid-cols-3 gap-4 mb-8">
+                <!-- Dynamically loaded via Javascript excluding the current job code -->
+            </div>
+            <div class="flex justify-center mt-4">
+                <button onclick="closeSwitchJobCodesModal()" class="px-14 py-4 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold text-lg transition-colors tracking-wide shadow-lg">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== MULTI-STEP CLOCK OUT WIZARD MODAL (Media 2 - Media 5) ==================== -->
+    <div id="clockout-wizard-modal" class="hidden fixed inset-0 z-50 bg-black/85 flex items-center justify-center p-4">
+        
+        <!-- STEP 1 & 2: DECLARE TIPS (NUMPAD SCREEN - Media 2 & Media 3) -->
+        <div id="clockout-step-tips" class="bg-[#3A4454] w-full max-w-md rounded-[24px] p-6 shadow-2xl relative border border-[#4E5B6E] flex flex-col items-center">
+            <!-- Bold centered Title matching screenshot -->
+            <h2 class="text-3xl font-extrabold text-center mb-2 text-white tracking-wide">Declare Tips</h2>
+            <!-- Step Label Parameter -->
+            <p id="wizard-label" class="text-lg font-semibold text-gray-300 text-center mb-4">Enter Cash Tip Amount</p>
+
+            <!-- Large Readable Digital Currency Readout -->
+            <div class="w-full bg-[#1F252E] border border-[#3E4A5B] rounded-2xl py-4 px-6 text-center text-4xl font-extrabold text-[#2EC28E] tracking-wider mb-6" id="wizard-display-val">
+                $ 0.00
+            </div>
+
+            <!-- Sleek Keypad Grid: Match Square Pin Keys but styled for Currency -->
+            <div class="w-full grid grid-cols-3 gap-3 mb-6">
+                <button onclick="pressWizardKey('1')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">1</button>
+                <button onclick="pressWizardKey('2')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">2</button>
+                <button onclick="pressWizardKey('3')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">3</button>
+                <button onclick="pressWizardKey('4')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">4</button>
+                <button onclick="pressWizardKey('5')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">5</button>
+                <button onclick="pressWizardKey('6')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">6</button>
+                <button onclick="pressWizardKey('7')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">7</button>
+                <button onclick="pressWizardKey('8')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">8</button>
+                <button onclick="pressWizardKey('9')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">9</button>
+                <button onclick="clearWizardTip()" class="h-14 rounded-lg bg-[#1E242B] text-plumCyan text-sm font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center uppercase">Clear</button>
+                <button onclick="pressWizardKey('0')" class="h-14 rounded-lg bg-[#252C36] text-white text-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">0</button>
+                <button onclick="backspaceWizardTip()" class="h-14 rounded-lg bg-[#1E242B] text-plumCoral text-sm font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414A2 2 0 0010.828 19H20a2 2 0 002-2V7a2 2 0 00-2-2h-9.172a2 2 0 00-1.414.586L3 12z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Bottom Pill Action Buttons with consistent styling -->
+            <div class="w-full flex space-x-4 mt-2">
+                <button onclick="wizardBack()" class="flex-1 py-4 rounded-full border border-gray-400 bg-transparent text-white font-bold text-lg hover:bg-gray-700 transition-colors tracking-wide">
+                    Back
+                </button>
+                <button onclick="wizardNext()" class="flex-1 py-4 rounded-full bg-[#4585FF] hover:bg-blue-600 text-white font-bold text-lg transition-colors tracking-wide shadow-lg">
+                    Next
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3 & 4: SCROLLABLE CLOCK OUT SUMMARY VIEW (Media 4 & Media 5) -->
+        <div id="clockout-step-summary" class="hidden bg-[#3A4454] w-full max-w-xl rounded-[24px] p-8 shadow-2xl relative border border-[#4E5B6E] flex flex-col max-h-[85vh]">
+            <!-- Header matching layout exactly -->
+            <h2 class="text-3xl font-extrabold text-center mb-6 text-white tracking-wide border-b border-gray-700/50 pb-3">Clock Out Summary</h2>
+            
+            <!-- Scrollable shift summary wrapper list with exact row data structures from media_4/5 -->
+            <div class="flex-grow overflow-y-auto pr-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-700 text-sm">
+                
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">ID#</span>
+                    <span class="font-bold text-white text-base">20</span>
+                </div>
+                
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Employee Name</span>
+                    <span id="sum-row-name" class="font-bold text-white text-base">Manager Employee</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Job Class</span>
+                    <span id="sum-row-class" class="font-bold text-white text-base">Manager</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Job Code</span>
+                    <span id="sum-row-code" class="font-bold text-white text-base">Manager</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Start Time</span>
+                    <span id="sum-row-start" class="font-bold text-white text-base">05/22/2026 8:43a</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">End Time</span>
+                    <span id="sum-row-end" class="font-bold text-white text-base">05/22/2026 8:55a</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Total Hours</span>
+                    <span id="sum-row-hours" class="font-bold text-white text-base">0.20 hrs</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Regular Hours</span>
+                    <span id="sum-row-reghours" class="font-bold text-white text-base">0.20 hrs</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Overtime Hours</span>
+                    <span class="font-bold text-white text-base">0.00 hrs</span>
+                </div>
+
+                <!-- Segregated Summary Break parameters -->
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Rest Breaks Taken</span>
+                    <span id="sum-row-rest-breaks" class="font-bold text-white text-base">0</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Rest Break Total</span>
+                    <span id="sum-row-rest-breaktime" class="font-bold text-white text-base">00:00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Meal Breaks Taken</span>
+                    <span id="sum-row-meal-breaks" class="font-bold text-white text-base">0</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Meal Break Total</span>
+                    <span id="sum-row-meal-breaktime" class="font-bold text-white text-base">00:00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Cash Sales</span>
+                    <span class="font-bold text-white text-base">$0.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Credit Card Sales</span>
+                    <span class="font-bold text-white text-base">$0.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2 bg-slate-800/30 rounded-lg">
+                    <span class="text-[#4585FF] font-semibold">Declared Cash Tips</span>
+                    <span id="sum-row-tips-declared" class="font-extrabold text-[#4585FF] text-base">$0.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2 bg-slate-800/30 rounded-lg">
+                    <span class="text-[#4585FF] font-semibold">Declared Tips To Others</span>
+                    <span id="sum-row-tips-others" class="font-extrabold text-[#4585FF] text-base">$0.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2.5 border-b border-gray-700/50 px-2">
+                    <span class="text-gray-300 font-medium">Net Cash Due</span>
+                    <span class="font-bold text-white text-base">$0.00</span>
+                </div>
+
+                <div class="flex justify-between items-center py-2 px-2">
+                    <span class="text-gray-300 font-medium">Close Cash</span>
+                    <span id="sum-row-closecash" class="font-bold text-white text-base">$100.00</span>
+                </div>
+
+            </div>
+
+            <!-- Footer matching cancel/confirm pill elements in Media (5) exactly -->
+            <div class="flex justify-center items-center space-x-3.5 mt-6 border-t border-gray-700/50 pt-4">
+                <button onclick="wizardBackToStep2()" class="px-8 py-4 rounded-full border border-gray-400 bg-transparent text-white font-bold text-lg hover:bg-gray-700 transition-colors tracking-wide">
+                    Back
+                </button>
+                <button onclick="closeClockoutWizard()" class="px-8 py-4 rounded-full bg-[#CFD6E1] hover:bg-white text-plumBtnDark font-bold text-lg transition-colors tracking-wide shadow-lg">
+                    Cancel
+                </button>
+                <button onclick="confirmWizardClockOut()" class="flex-grow py-4 rounded-full bg-[#2EC28E] hover:bg-emerald-600 text-white font-bold text-lg transition-colors tracking-wide shadow-lg">
+                    Confirm Clockout
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ==================== PLUM POS GLOBAL FOOTER ==================== -->
+    <footer class="w-full flex flex-col justify-end">
+
+
+        <!-- ==================== SCREEN ACTION BUTTON PANELS (POSITIONED DIRECTLY ABOVE FOOTER) ==================== -->
+
+        <!-- A. Standard Tables Floor Map Tab Row (Exactly matching order and design of image_357ec0.png) -->
+        <div id="pos-tabs-panel" class="hidden bg-[#0A0C0F] border-t border-gray-900 px-6 py-2.5 flex flex-wrap justify-end gap-2">
+            <button onclick="triggerTabAction('online')" class="px-5 py-2.5 bg-gray-800 text-gray-300 hover:text-white rounded text-sm font-semibold border-b-2 border-transparent active:border-plumCyan transition-all flex items-center space-x-1.5">
+                <span>Online Orders</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+            </button>
+            <!-- Default selected Tab (Orange highlight line at top as shown in screenshot) -->
+            <button onclick="triggerTabAction('default')" class="px-5 py-2.5 bg-[#1F252E] text-white rounded text-sm font-semibold border-t-2 border-orange-500 transition-all">
+                Default
+            </button>
+            <!-- Functions Button triggers Functions overlay popup -->
+            <button onclick="openFunctionsModal()" class="px-5 py-2.5 bg-gray-800 text-gray-300 hover:text-white rounded text-sm font-semibold border-b-2 border-transparent hover:bg-slate-700 transition-all">
+                Functions
+            </button>
+            <button onclick="triggerTabAction('quicksale')" class="px-5 py-2.5 bg-gray-800 text-gray-300 hover:text-white rounded text-sm font-semibold border-b-2 border-transparent active:border-plumCyan transition-all">
+                Quick Sale
+            </button>
+            <!-- Logout Button with red top highlight bar -->
+            <button onclick="performLogout()" class="px-6 py-2.5 bg-gray-800 text-gray-200 border-t-2 border-red-500 hover:bg-red-950 hover:text-white rounded text-sm font-bold transition-all uppercase tracking-wide">
+                Logout
+            </button>
+        </div>
+
+
+        <!-- B. Timeslip Detailed Footer Tab Action Bar (Exactly matching Timeslip Screen.jpg / 5th Screen) -->
+        <div id="timeslip-tabs-panel" class="hidden bg-[#0A0C0F] border-t border-gray-900 px-4 py-2 flex flex-wrap justify-end items-center gap-2">
+            
+            <!-- Group containing return button, utility buttons and logout button right-aligned adjacent to each other -->
+            <div class="flex flex-wrap items-center gap-2 justify-end w-full">
+                <!-- Return button moved directly next to the left side of the close report button, grouped tightly without separating margin -->
+                <button onclick="returnToFloorMap()" class="px-4 py-2.5 bg-[#1E242B] hover:bg-gray-700 rounded text-xs font-bold text-gray-200 transition-all flex items-center space-x-1 border border-gray-700/50">
+                    <span>&lt;&lt; Tables/Order</span>
+                </button>
+
+                <button onclick="triggerFunction('Close Report')" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Close Report
+                </button>
+                <button onclick="triggerFunction('Add Cash Drop')" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Add Cash Drop
+                </button>
+                <button onclick="triggerFunction('Update Open Cash')" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Update Open Cash
+                </button>
+                <button onclick="triggerFunction('Update Close Cash')" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Update Close Cash
+                </button>
+                <button id="btn-timeslip-break" onclick="toggleTimeslipBreak()" class="px-3 py-2.5 bg-[#1E242B] hover:bg-amber-600 rounded text-[11px] font-bold text-amber-400 border border-gray-700/50">
+                    Start Break
+                </button>
+                
+                <!-- Added Switch Job Codes button in between Start Break and Clockout -->
+                <button id="btn-switch-job-codes" onclick="openSwitchJobCodesModal()" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Switch Job Codes
+                </button>
+
+                <button onclick="triggerClockoutWizard()" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Clockout
+                </button>
+                <button onclick="openFunctionsModal()" class="px-3 py-2.5 bg-[#1E242B] hover:bg-slate-700 rounded text-[11px] font-bold text-gray-200 border border-gray-700/50">
+                    Functions
+                </button>
+
+                <!-- Logout on far right with red top border line - aligned next to utility buttons -->
+                <button onclick="performLogout()" class="px-5 py-2.5 bg-[#1E242B] text-gray-200 border-t-2 border-red-500 hover:bg-red-950 hover:text-white rounded text-xs font-bold transition-all uppercase tracking-wide ml-1">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+
+        <!-- ==================== PLUM SYSTEM STATUS BAR (EXACT FIXED BOTTOM AS SHOWN IN SCREENSHOTS) ==================== -->
+        <div class="bg-[#12161A] border-t border-gray-950 px-6 py-3.5 flex items-center justify-between text-xs text-gray-400 select-none z-10">
+            <!-- Left Info Block -->
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <!-- Footer Plum Logo -->
+                    <svg class="w-4 h-4 text-purple-600" viewBox="0 0 100 100" fill="currentColor">
+                        <circle cx="50" cy="50" r="40" />
+                    </svg>
+                    <span class="font-medium text-gray-300">Powered by PlumPOS</span>
+                </div>
+                <span class="text-gray-700">|</span>
+                <span id="footer-terminal-mode">Register 1</span>
+                <span class="text-gray-700">|</span>
+                <!-- Custom SVG Info Icon -->
+                <button onclick="showInfoOverlay()" class="text-plumCyan hover:text-cyan-300 focus:outline-none" title="Terminal Status Info">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+                <span class="text-gray-700 hidden sm:inline">|</span>
+                <span id="status-event-label" class="hidden sm:inline">No Active Events</span>
+            </div>
+
+            <!-- Right Clock & Connection Block -->
+            <div class="flex items-center space-x-4">
+                <span id="live-clock" class="font-mono tracking-wide text-gray-300">Dummy Employee Fri, May 22 8:55 A, PST</span>
+                
+                <!-- Green Active Connection Wifi Icon -->
+                <div class="flex items-center space-x-1" title="POS Server Connected">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span class="text-[10px] font-extrabold tracking-widest text-emerald-500 uppercase hidden sm:inline">PRIMARY</span>
+                </div>
+            </div>
+        </div>
+
+    </footer>
+
+
+    <!-- ==================== LOGGED IN SYSTEM SCRIPTS ==================== -->
+    <script>
+        // Internal State Storage
+        let enteredPin = "";
+        let selectedJobClass = "";
+        let selectedJobCode = "";
+        let currentUserId = "";
+        
+        // Active POS sessions list for Login PIN lookup to bypass Job Classes/Codes selection screens
+        let sessions = {}; 
+        
+        // Break variables for dummy employee simulation
+        let breakActive = false;
+        let currentBreakType = "";
+        let currentBreakSeconds = 0; // Duration tracking for active break
+
+        let restBreaksCount = 0;
+        let restBreakSeconds = 0;
+        let mealBreaksCount = 0;
+        let mealBreakSeconds = 0;
+        let breakTimerInterval = null;
+
+        // Biometric Face Scan variables
+        let faceScanTimeout1 = null;
+        let faceScanTimeout2 = null;
+        let faceScanTimeout3 = null;
+        let webcamStream = null;
+
+        // Multi-step Wizard declaration fields
+        let clockoutWizardStep = 1; // 1 = Cash Tip, 2 = Tips To Others, 3 = Summary list view
+        let centsTipAmount = 0;
+        let centsTipOthers = 0;
+
+        // Static list of possible job codes
+        const allJobCodes = ['General Manager', 'Cook', 'Dishwasher', 'Cashier', 'Bartender'];
+
+        // Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            // Setup keyboard support for numpad entry
+            document.addEventListener('keydown', (e) => {
+                const activeScreen = getActiveScreen();
+                if (activeScreen === 'login') {
+                    if (e.key >= '0' && e.key <= '9') {
+                        pressPin(e.key);
+                    } else if (e.key === 'Backspace') {
+                        deletePin();
+                    } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+                        clearPin();
+                    } else if (e.key === 'Enter') {
+                        submitPin();
+                    }
+                }
+            });
+        });
+
+        // Determine currently active viewport screen
+        function getActiveScreen() {
+            if (!document.getElementById('screen-login').classList.contains('hidden')) return 'login';
+            if (!document.getElementById('screen-face-recognition').classList.contains('hidden')) return 'face-recognition';
+            if (!document.getElementById('screen-job-class').classList.contains('hidden')) return 'job-class';
+            if (!document.getElementById('screen-job-code').classList.contains('hidden')) return 'job-code';
+            if (!document.getElementById('screen-tables').classList.contains('hidden')) return 'tables';
+            return 'timeslip-detail';
+        }
+
+        // Live Clock Tick Function (Matches format "C. Sun, Jul 27 12:11 P, MST" style)
+        function updateClock() {
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const d = new Date();
+            
+            const dayName = days[d.getDay()];
+            const monthName = months[d.getMonth()];
+            const dateNum = d.getDate();
+            
+            let hours = d.getHours();
+            const ampm = hours >= 12 ? 'P' : 'A';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // 0 should be 12
+            
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            
+            // Replicates exactly the formatting structure of screenshot
+            const formattedTime = `C. ${dayName}, ${monthName} ${dateNum} ${hours}:${minutes} ${ampm}, MST`;
+            document.getElementById('live-clock').innerText = formattedTime;
+        }
+
+        // --- PIN SCREEN LOGIC ---
+        function pressPin(digit) {
+            if (enteredPin.length < 4) {
+                enteredPin += digit;
+                renderPinDots();
+            }
+        }
+
+        // Delete single pin character
+        function deletePin() {
+            if (enteredPin.length > 0) {
+                enteredPin = enteredPin.slice(0, -1);
+                renderPinDots();
+            }
+        }
+
+        // Reset pin state
+        function clearPin() {
+            enteredPin = "";
+            renderPinDots();
+        }
+
+        // Renders circles inside the Pin indicator area
+        function renderPinDots() {
+            const container = document.getElementById('pin-dots');
+            container.innerHTML = "";
+            for (let i = 0; i < 4; i++) {
+                if (i < enteredPin.length) {
+                    const dot = document.createElement('span');
+                    dot.className = "text-white text-3xl font-bold animate-[scaleIn_0.1s_ease-out] mx-1";
+                    dot.innerText = "•";
+                    container.appendChild(dot);
+                } else {
+                    const dot = document.createElement('span');
+                    dot.className = "text-gray-600 text-3xl mx-1";
+                    dot.innerText = "•";
+                    container.appendChild(dot);
+                }
+            }
+        }
+
+        // Accept pin and forward to Job select pop-up OR restore active logged in session
+        function submitPin() {
+            if (enteredPin.length === 0) {
+                showAlert("Attention", "Please enter your terminal security PIN.", "warning");
+                return;
+            }
+            currentUserId = enteredPin; 
+            
+            // Route through Face Recognition screen first!
+            transitionToScreen('face-recognition');
+        }
+
+        // Swiping card bypass
+        function simulateCardSwipe() {
+            enteredPin = "1020";
+            renderPinDots();
+            setTimeout(() => {
+                submitPin();
+            }, 250);
+        }
+
+        // Fingerprint authentication simulation
+        function simulateBiometric() {
+            enteredPin = "2020";
+            renderPinDots();
+            setTimeout(() => {
+                submitPin();
+            }, 250);
+        }
+
+        // --- SCREEN TRANSITION FLOW ---
+        function transitionToScreen(target) {
+            // Hide all sections
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-face-recognition').classList.add('hidden');
+            document.getElementById('screen-job-class').classList.add('hidden');
+            document.getElementById('screen-job-code').classList.add('hidden');
+            document.getElementById('screen-tables').classList.add('hidden');
+            document.getElementById('screen-timeslip-detail').classList.add('hidden');
+            
+            // Hide bottom active POS bars
+            document.getElementById('pos-tabs-panel').classList.add('hidden');
+            document.getElementById('timeslip-tabs-panel').classList.add('hidden');
+            document.getElementById('login-watermark').classList.add('hidden');
+
+            // Hide Functions modal on screen transition to prevent overlay artifacts
+            closeFunctionsModal();
+
+            // Handle clean stream exit when transitioning away from face recognition
+            if (target !== 'face-recognition') {
+                stopWebcamStream();
+                clearFaceScanTimers();
+            }
+
+            if (target === 'login') {
+                document.getElementById('screen-login').classList.remove('hidden');
+                document.getElementById('login-watermark').classList.remove('hidden');
+                document.getElementById('footer-terminal-mode').innerText = "Register 1";
+                clearPin();
+            } else if (target === 'face-recognition') {
+                document.getElementById('screen-face-recognition').classList.remove('hidden');
+                document.getElementById('face-id-subtitle').innerText = `ID: ${currentUserId || '20'}`;
+                startFaceRecognitionScan();
+            } else if (target === 'job-class') {
+                document.getElementById('screen-job-class').classList.remove('hidden');
+                resetJobButtons('class');
+                selectedJobClass = ""; // Clear selection for new login sequence
+                document.getElementById('btn-class-next').classList.add('hidden'); // Hide next button initially
+            } else if (target === 'job-code') {
+                document.getElementById('screen-job-code').classList.remove('hidden');
+                resetJobButtons('code');
+                selectedJobCode = ""; // Clear selection for new login sequence
+                document.getElementById('btn-code-next').classList.add('hidden'); // Hide next button initially
+            } else if (target === 'tables') {
+                document.getElementById('screen-tables').classList.remove('hidden');
+                document.getElementById('pos-tabs-panel').classList.remove('hidden');
+                document.getElementById('footer-terminal-mode').innerText = "Register 1";
+            } else if (target === 'timeslip-detail') {
+                document.getElementById('screen-timeslip-detail').classList.remove('hidden');
+                document.getElementById('timeslip-tabs-panel').classList.remove('hidden');
+                document.getElementById('footer-terminal-mode').innerText = "Register 1";
+                
+                // Update interactive break state switches & job code buttons
+                updateSwitchJobCodesButton();
+                
+                // Set text fields inside Timeslip Screen
+                document.getElementById('timeslip-employee-name').innerText = selectedJobClass ? `${selectedJobClass} Employee` : "Dummy Employee";
+                document.getElementById('timeslip-job-class-label').innerText = selectedJobClass ? selectedJobClass : "Manager";
+                document.getElementById('timeslip-job-code-label').innerText = selectedJobCode ? selectedJobCode : "Manager";
+                
+                // Set the correct visual style for Start/Stop Break
+                const breakBtn = document.getElementById('btn-timeslip-break');
+                if (breakActive) {
+                    breakBtn.innerText = "Stop Break";
+                    breakBtn.className = "px-3 py-2.5 bg-red-600 hover:bg-red-700 rounded text-[11px] font-bold text-white animate-pulse border border-gray-700/50";
+                } else {
+                    breakBtn.innerText = "Start Break";
+                    breakBtn.className = "px-3 py-2.5 bg-[#1E242B] hover:bg-amber-600 rounded text-[11px] font-bold text-amber-400 border border-gray-700/50";
+                }
+
+                updateTimeslipBreakDisplays();
+            }
+        }
+
+        // --- FACE RECOGNITION BIOMETRIC LOGIC ---
+        function startFaceRecognitionScan() {
+            // Reset scan ticks to loading spin states
+            resetBiometricChecklist();
+
+            // Trigger webcam feed inside viewfinder circle if supported
+            const video = document.getElementById('webcam-preview');
+            const fallbackSvg = document.getElementById('webcam-fallback-svg');
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: { width: 300, height: 300 } })
+                .then(stream => {
+                    webcamStream = stream;
+                    video.srcObject = stream;
+                    video.play();
+                    fallbackSvg.classList.add('hidden');
+                })
+                .catch(err => {
+                    // Fallback to high-fidelity animated SVG avatar seamlessly
+                    fallbackSvg.classList.remove('hidden');
+                });
+            } else {
+                fallbackSvg.classList.remove('hidden');
+            }
+
+            // Step 1: Detect Face (0.8 seconds)
+            faceScanTimeout1 = setTimeout(() => {
+                setBiometricTickGreen('face-check-1');
+                document.getElementById('face-scan-status-text').innerText = "Analyzing profile structure...";
+                
+                // Step 2: Verification (1.6 seconds)
+                faceScanTimeout2 = setTimeout(() => {
+                    setBiometricTickGreen('face-check-2');
+                    document.getElementById('face-scan-status-text').innerText = "Securing system access...";
+                    
+                    // Step 3: Authorization (2.4 seconds)
+                    faceScanTimeout3 = setTimeout(() => {
+                        setBiometricTickGreen('face-check-3');
+                        document.getElementById('face-scan-status-text').innerText = "Access Approved!";
+                        
+                        // Proceed to routing after confirmation delay (3.0 seconds total)
+                        setTimeout(() => {
+                            proceedAfterBiometricVerification();
+                        }, 600);
+
+                    }, 800);
+                }, 800);
+            }, 800);
+        }
+
+        function proceedAfterBiometricVerification() {
+            // Check if user already has an active, logged-in session
+            if (sessions[currentUserId]) {
+                selectedJobClass = sessions[currentUserId].jobClass;
+                selectedJobCode = sessions[currentUserId].jobCode;
+                breakActive = sessions[currentUserId].breakActive;
+                currentBreakType = sessions[currentUserId].currentBreakType || "";
+                currentBreakSeconds = sessions[currentUserId].currentBreakSeconds || 0;
+                restBreaksCount = sessions[currentUserId].restBreaksCount || 0;
+                restBreakSeconds = sessions[currentUserId].restBreakSeconds || 0;
+                mealBreaksCount = sessions[currentUserId].mealBreaksCount || 0;
+                mealBreakSeconds = sessions[currentUserId].mealBreakSeconds || 0;
+                
+                // Restart background timer if they were on break when they logged out
+                if (breakActive) {
+                    restartBreakTimer();
+                    
+                    // Display the breakout popup prompt ONLY if active break is greater than 1 minute (>= 60s)
+                    if (currentBreakSeconds >= 60) {
+                        showLoginBreakoutModal();
+                    } else {
+                        // If break is less than 1 minute, keep them on break and bypass modal, transitioning directly to tables map
+                        transitionToScreen('tables');
+                    }
+                    return;
+                }
+                
+                // Direct redirect to map
+                transitionToScreen('tables');
+            } else {
+                // fresh login session route
+                transitionToScreen('job-class');
+            }
+        }
+
+        function abortFaceScan() {
+            stopWebcamStream();
+            clearFaceScanTimers();
+            transitionToScreen('login');
+        }
+
+        function clearFaceScanTimers() {
+            if (faceScanTimeout1) clearTimeout(faceScanTimeout1);
+            if (faceScanTimeout2) clearTimeout(faceScanTimeout2);
+            if (faceScanTimeout3) clearTimeout(faceScanTimeout3);
+        }
+
+        function stopWebcamStream() {
+            if (webcamStream) {
+                try {
+                    webcamStream.getTracks().forEach(track => track.stop());
+                } catch (e) {}
+                webcamStream = null;
+            }
+            const video = document.getElementById('webcam-preview');
+            if (video) {
+                video.srcObject = null;
+            }
+        }
+
+        function resetBiometricChecklist() {
+            document.getElementById('face-scan-status-text').innerText = "Positioning scanner. Hold steady...";
+            
+            // Reset check 1 to a spinning loader
+            document.getElementById('face-check-1').innerHTML = `
+                <svg class="w-3.5 h-3.5 animate-spin text-plumCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.4" class="opacity-25"></circle>
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
+                </svg>
+            `;
+            document.getElementById('face-check-1').className = "flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-plumCyan";
+
+            // Reset checks 2 and 3 to grey dots
+            document.getElementById('face-check-2').innerHTML = `<span class="text-xs font-bold text-gray-600">•</span>`;
+            document.getElementById('face-check-2').className = "flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-gray-500";
+
+            document.getElementById('face-check-3').innerHTML = `<span class="text-xs font-bold text-gray-600">•</span>`;
+            document.getElementById('face-check-3').className = "flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-gray-500";
+        }
+
+        function setBiometricTickGreen(elementId) {
+            const checkContainer = document.getElementById(elementId);
+            if (!checkContainer) return;
+            
+            // Inject sharp green check mark matching Face 2 design specifications
+            checkContainer.className = "flex items-center justify-center w-5 h-5 rounded-full bg-[#18533E] border border-plumGreen text-[#2EC28E] animate-[scaleIn_0.15s_ease-out]";
+            checkContainer.innerHTML = `
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            `;
+
+            // Prepare next element's loader if applicable
+            if (elementId === 'face-check-1') {
+                const nextCheck = document.getElementById('face-check-2');
+                nextCheck.className = "flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-plumCyan";
+                nextCheck.innerHTML = `
+                    <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.4" class="opacity-25"></circle>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
+                    </svg>
+                `;
+            } else if (elementId === 'face-check-2') {
+                const nextCheck = document.getElementById('face-check-3');
+                nextCheck.className = "flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 border border-slate-700 text-plumCyan";
+                nextCheck.innerHTML = `
+                    <svg class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-dasharray="31.4" class="opacity-25"></circle>
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" class="opacity-75"></path>
+                    </svg>
+                `;
+            }
+        }
+
+
+        // Helper to reset style values on popup buttons
+        function resetJobButtons(type) {
+            if (type === 'class') {
+                const buttons = document.querySelectorAll('.class-btn');
+                buttons.forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-plumCyan', 'bg-[#1C2229]');
+                    btn.classList.add('bg-plumBtnDark');
+                });
+            } else if (type === 'code') {
+                const buttons = document.querySelectorAll('.code-btn');
+                buttons.forEach(btn => {
+                    btn.classList.remove('ring-4', 'ring-plumGreen', 'bg-[#1C2229]');
+                    btn.classList.add('bg-plumBtnDark');
+                });
+            }
+        }
+
+        // --- SEQUENTIAL CHOOSE JOB POPUP WINDOW LOGIC ---
+
+        // 1. CHOOSE JOB CLASS SELECT (Highlights only - does not transition automatically)
+        function selectJobClass(jobClass) {
+            selectedJobClass = jobClass;
+            
+            // Apply instant feedback glow
+            resetJobButtons('class');
+            let btnId = 'class-' + jobClass.replace(/\s+/g, '');
+            const targetBtn = document.getElementById(btnId);
+            if (targetBtn) {
+                targetBtn.classList.remove('bg-plumBtnDark');
+                targetBtn.classList.add('ring-4', 'ring-plumCyan', 'bg-[#1C2229]');
+            }
+
+            // Reveal the green next button upon selection
+            document.getElementById('btn-class-next').classList.remove('hidden');
+        }
+
+        // Handles explicit navigation forward when "Next" is pressed
+        function confirmJobClassSelection() {
+            if (!selectedJobClass) {
+                showAlert("Job Class Required", "Please select a Job Class option before proceeding.", "warning");
+                return;
+            }
+            transitionToScreen('job-code');
+        }
+
+        // 2. CHOOSE JOB CODE SELECT (Highlights only - does not transition automatically)
+        function selectJobCode(jobCode) {
+            selectedJobCode = jobCode;
+
+            // Apply instant feedback glow
+            resetJobButtons('code');
+            let btnId = 'code-' + jobCode.replace(/\s+/g, '');
+            const targetBtn = document.getElementById(btnId);
+            if (targetBtn) {
+                targetBtn.classList.remove('bg-plumBtnDark');
+                targetBtn.classList.add('ring-4', 'ring-plumGreen', 'bg-[#1C2229]');
+            }
+
+            // Reveal the green next button upon selection
+            document.getElementById('btn-code-next').classList.remove('hidden');
+        }
+
+        // Handles explicit registration and dashboard transition when "Next" is pressed
+        function confirmJobCodeSelection() {
+            if (!selectedJobCode) {
+                showAlert("Job Code Required", "Please select a Job Code option before proceeding.", "warning");
+                return;
+            }
+
+            // Create active session memory trace for current login user pin
+            sessions[currentUserId] = {
+                jobClass: selectedJobClass,
+                jobCode: selectedJobCode,
+                breakActive: false,
+                currentBreakType: "",
+                currentBreakSeconds: 0,
+                restBreaksCount: 0,
+                restBreakSeconds: 0,
+                mealBreaksCount: 0,
+                mealBreakSeconds: 0
+            };
+
+            transitionToScreen('tables');
+        }
+
+        // Go Back Cancel routines
+        function goBackToLogin() {
+            selectedJobClass = "";
+            selectedJobCode = "";
+            transitionToScreen('login');
+        }
+
+        // Return back step
+        function goBackToClassSelect() {
+            selectedJobCode = "";
+            transitionToScreen('job-class');
+        }
+
+        // --- TABLE MAP HANDLERS ---
+        function handleTableClick(tableName) {
+            showAlert(`Table ${tableName}`, `Table ${tableName} selected successfully.`, "success");
+        }
+
+        // --- FUNCTIONS MODAL OVERLAYS (Functions.jpg) ---
+        function openFunctionsModal() {
+            document.getElementById('functions-modal').classList.remove('hidden');
+        }
+
+        // Close Functions Modal safely
+        function closeFunctionsModal() {
+            document.getElementById('functions-modal').classList.add('hidden');
+        }
+
+        function triggerFunction(functionName) {
+            closeFunctionsModal();
+            showAlert("Function Triggered", `Simulating the "${functionName}" operation safely inside terminal memory.`, "info");
+        }
+
+        // --- TIMESLIP SIMULATIONS (Timeslip Screen.jpg) ---
+        function navigateToTimeslipScreen() {
+            transitionToScreen('timeslip-detail');
+        }
+
+        // Return back handler
+        function returnToFloorMap() {
+            transitionToScreen('tables');
+        }
+
+        function focusOpenCashInput() {
+            const input = document.getElementById('input-open-cash');
+            input.focus();
+            input.select();
+        }
+
+        // Recalculates dummy Close Cash in response
+        function recalculateTimeslipTotals() {
+            const val = parseFloat(document.getElementById('input-open-cash').value) || 0;
+            document.getElementById('timeslip-close-cash-val').innerText = val.toFixed(2);
+        }
+
+        // Toggle shift breaks (Triggers option modal selection popup)
+        function toggleTimeslipBreak() {
+            if (!breakActive) {
+                // Open selection confirmation popup instead of starting instantly
+                document.getElementById('break-type-modal').classList.remove('hidden');
+            } else {
+                confirmStopBreak();
+            }
+        }
+
+        function formatBreakTime(totalSeconds) {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+
+        function confirmStartBreak(breakType) {
+            closeBreakTypeModal();
+            breakActive = true;
+            currentBreakType = breakType;
+            currentBreakSeconds = 0;
+            
+            if (breakType === 'Rest Break') {
+                restBreaksCount++;
+            } else {
+                mealBreaksCount++;
+            }
+            
+            updateTimeslipBreakDisplays();
+            
+            // Sync status to session
+            if (sessions[currentUserId]) {
+                sessions[currentUserId].breakActive = true;
+                sessions[currentUserId].currentBreakType = breakType;
+                sessions[currentUserId].currentBreakSeconds = 0;
+                sessions[currentUserId].restBreaksCount = restBreaksCount;
+                sessions[currentUserId].mealBreaksCount = mealBreaksCount;
+            }
+            
+            const breakBtn = document.getElementById('btn-timeslip-break');
+            breakBtn.innerText = "Stop Break";
+            breakBtn.className = "px-3 py-2.5 bg-red-600 hover:bg-red-700 rounded text-[11px] font-bold text-white animate-pulse border border-gray-700/50";
+            
+            // Toggle Switch Job Codes visibility status
+            updateSwitchJobCodesButton();
+            
+            // Start the interval runner safely
+            restartBreakTimer();
+        }
+
+        function restartBreakTimer() {
+            if (breakTimerInterval) clearInterval(breakTimerInterval);
+            breakTimerInterval = setInterval(() => {
+                currentBreakSeconds++;
+                if (currentBreakType === 'Rest Break') {
+                    restBreakSeconds++;
+                } else if (currentBreakType === 'Meal Break') {
+                    mealBreakSeconds++;
+                }
+
+                // Sync counts and timers to memory session
+                if (sessions[currentUserId]) {
+                    sessions[currentUserId].currentBreakSeconds = currentBreakSeconds;
+                    sessions[currentUserId].restBreakSeconds = restBreakSeconds;
+                    sessions[currentUserId].mealBreakSeconds = mealBreakSeconds;
+                }
+
+                updateTimeslipBreakDisplays();
+            }, 1000);
+        }
+
+        function confirmStopBreak() {
+            // Guard Rule: If active break duration is less than 60 seconds (1 minute), block break out
+            if (currentBreakSeconds < 60) {
+                showAlert(
+                    "", 
+                    "The minimum break time can be 1 min. Please break out accordingly.", 
+                    "minimum-break"
+                );
+                return false;
+            }
+
+            breakActive = false;
+            currentBreakType = "";
+            currentBreakSeconds = 0;
+            
+            // Sync status to session
+            if (sessions[currentUserId]) {
+                sessions[currentUserId].breakActive = false;
+                sessions[currentUserId].currentBreakType = "";
+                sessions[currentUserId].currentBreakSeconds = 0;
+            }
+            
+            const breakBtn = document.getElementById('btn-timeslip-break');
+            breakBtn.innerText = "Start Break";
+            breakBtn.className = "px-3 py-2.5 bg-[#1E242B] hover:bg-amber-600 rounded text-[11px] font-bold text-amber-400 border border-gray-700/50";
+            
+            clearInterval(breakTimerInterval);
+            breakTimerInterval = null;
+
+            // Toggle Switch Job Codes visibility status
+            updateSwitchJobCodesButton();
+            updateTimeslipBreakDisplays();
+            return true;
+        }
+
+        function closeBreakTypeModal() {
+            document.getElementById('break-type-modal').classList.add('hidden');
+        }
+
+        function updateTimeslipBreakDisplays() {
+            const restCountEl = document.getElementById('timeslip-rest-breaks-count');
+            const restTimeEl = document.getElementById('timeslip-rest-break-total');
+            const mealCountEl = document.getElementById('timeslip-meal-breaks-count');
+            const mealTimeEl = document.getElementById('timeslip-meal-break-total');
+
+            if (restCountEl) restCountEl.innerText = restBreaksCount;
+            if (restTimeEl) restTimeEl.innerText = formatBreakTime(restBreakSeconds);
+            if (mealCountEl) mealCountEl.innerText = mealBreaksCount;
+            if (mealTimeEl) mealTimeEl.innerText = formatBreakTime(mealBreakSeconds);
+        }
+
+        // Update the visual representation of "Switch Job Codes" button based on break state
+        function updateSwitchJobCodesButton() {
+            const switchBtn = document.getElementById('btn-switch-job-codes');
+            if (!switchBtn) return;
+            
+            if (breakActive) {
+                switchBtn.disabled = true;
+                switchBtn.classList.add('opacity-40', 'cursor-not-allowed', 'hover:bg-[#1E242B]');
+                switchBtn.classList.remove('hover:bg-slate-700');
+            } else {
+                switchBtn.disabled = false;
+                switchBtn.classList.remove('opacity-40', 'cursor-not-allowed', 'hover:bg-[#1E242B]');
+                switchBtn.classList.add('hover:bg-slate-700');
+            }
+        }
+
+        // --- SWITCH JOB CODES LOGIC ---
+        function openSwitchJobCodesModal() {
+            if (breakActive) return; // Guard clause to guarantee lock during breaks
+            
+            const grid = document.getElementById('switch-job-code-grid');
+            grid.innerHTML = '';
+            
+            // Filter out current active job code selected at login
+            const filteredCodes = allJobCodes.filter(code => code !== selectedJobCode);
+            
+            filteredCodes.forEach(code => {
+                const btn = document.createElement('button');
+                btn.className = "h-20 rounded-xl bg-plumBtnDark text-white font-bold hover:bg-slate-700 active:scale-95 transition-all text-base flex items-center justify-center tracking-wide px-2 text-center shadow border border-[#4E5B6E]";
+                btn.innerText = code;
+                btn.onclick = () => {
+                    performJobCodeSwitch(code);
+                };
+                grid.appendChild(btn);
+            });
+            
+            // To maintain a clean layout balance, if filtered length is odd/irregular, append spacing
+            if (filteredCodes.length % 3 !== 0) {
+                const spacer = document.createElement('div');
+                spacer.className = "h-20 bg-transparent";
+                grid.appendChild(spacer);
+            }
+            
+            document.getElementById('screen-switch-job-code').classList.remove('hidden');
+        }
+
+        function closeSwitchJobCodesModal() {
+            document.getElementById('screen-switch-job-code').classList.add('hidden');
+        }
+
+        function performJobCodeSwitch(newCode) {
+            selectedJobCode = newCode;
+            document.getElementById('timeslip-job-code-label').innerText = newCode;
+            
+            // Sync shift code inside active session list trace
+            if (sessions[currentUserId]) {
+                sessions[currentUserId].jobCode = newCode;
+            }
+            
+            closeSwitchJobCodesModal();
+        }
+
+        // --- ACTIVE BREAK LOGIN DISPATCH PROMPT MODAL ---
+        function showLoginBreakoutModal() {
+            const modal = document.getElementById('login-breakout-modal');
+            const msgEl = document.getElementById('login-breakout-msg');
+            msgEl.innerText = `You are currently on an active ${currentBreakType}. Would you like to end your break and clock in now?`;
+            modal.classList.remove('hidden');
+        }
+
+        function closeLoginBreakoutModal() {
+            document.getElementById('login-breakout-modal').classList.add('hidden');
+        }
+
+        function handleLoginBreakoutAction(action) {
+            if (action === 'stop') {
+                const stopped = confirmStopBreak();
+                if (stopped) {
+                    closeLoginBreakoutModal();
+                    transitionToScreen('tables');
+                }
+            } else {
+                // Keep on break
+                closeLoginBreakoutModal();
+                transitionToScreen('tables');
+            }
+        }
+
+        // --- MULTI-STEP CLOCK OUT WIZARD SIMULATION (Media 2 - Media 5) ---
+        function triggerClockoutWizard() {
+            // Establish Step 1 state
+            clockoutWizardStep = 1;
+            centsTipAmount = 0;
+            centsTipOthers = 0;
+            
+            updateWizardDisplay();
+
+            // Toggle screens
+            document.getElementById('clockout-step-tips').classList.remove('hidden');
+            document.getElementById('clockout-step-summary').classList.add('hidden');
+            document.getElementById('clockout-wizard-modal').classList.remove('hidden');
+        }
+
+        // Interactive Keypad Input Handler formatted as Currency (e.g. 5 -> $0.05, 50 -> $0.50)
+        function pressWizardKey(digit) {
+            if (clockoutWizardStep === 1) {
+                if (centsTipAmount < 999999) { // Cap at $9,999.99
+                    centsTipAmount = centsTipAmount * 10 + parseInt(digit);
+                }
+            } else if (clockoutWizardStep === 2) {
+                if (centsTipOthers < 999999) {
+                    centsTipOthers = centsTipOthers * 10 + parseInt(digit);
+                }
+            }
+            updateWizardDisplay();
+        }
+
+        // Clear wizard state inputs
+        function clearWizardTip() {
+            if (clockoutWizardStep === 1) {
+                centsTipAmount = 0;
+            } else if (clockoutWizardStep === 2) {
+                centsTipOthers = 0;
+            }
+            updateWizardDisplay();
+        }
+
+        // Delete wizard inputs
+        function backspaceWizardTip() {
+            if (clockoutWizardStep === 1) {
+                centsTipAmount = Math.floor(centsTipAmount / 10);
+            } else if (clockoutWizardStep === 2) {
+                centsTipOthers = Math.floor(centsTipOthers / 10);
+            }
+            updateWizardDisplay();
+        }
+
+        // Format decimal values
+        function updateWizardDisplay() {
+            const stepLabel = document.getElementById('wizard-label');
+            const displayVal = document.getElementById('wizard-display-val');
+
+            if (clockoutWizardStep === 1) {
+                stepLabel.innerText = "Enter Cash Tip Amount";
+                const dollars = (centsTipAmount / 100).toFixed(2);
+                displayVal.innerText = `$ ${dollars}`;
+            } else if (clockoutWizardStep === 2) {
+                stepLabel.innerText = "Enter Cash Tip Amount To Others";
+                const dollars = (centsTipOthers / 100).toFixed(2);
+                displayVal.innerText = `$ ${dollars}`;
+            }
+        }
+
+        // Wizard Navigation: Next action button
+        function wizardNext() {
+            if (clockoutWizardStep === 1) {
+                clockoutWizardStep = 2;
+                updateWizardDisplay();
+            } else if (clockoutWizardStep === 2) {
+                // Transition to Step 3: Scrollable Ledger Shift Summary view
+                clockoutWizardStep = 3;
+                compileShiftSummaryData();
+                document.getElementById('clockout-step-tips').classList.add('hidden');
+                document.getElementById('clockout-step-summary').classList.remove('hidden');
+            }
+        }
+
+        // Wizard Navigation: Back action button
+        function wizardBack() {
+            if (clockoutWizardStep === 1) {
+                // Return to main timeslip view safely
+                closeClockoutWizard();
+            } else if (clockoutWizardStep === 2) {
+                clockoutWizardStep = 1;
+                updateWizardDisplay();
+            }
+        }
+
+        function wizardBackToStep2() {
+            clockoutWizardStep = 2;
+            updateWizardDisplay();
+            document.getElementById('clockout-step-summary').classList.add('hidden');
+            document.getElementById('clockout-step-tips').classList.remove('hidden');
+        }
+
+        function closeClockoutWizard() {
+            document.getElementById('clockout-wizard-modal').classList.add('hidden');
+        }
+
+        // Dynamic Compilation of Shift Details from layout metrics to Summary Card View (Media 4/5)
+        function compileShiftSummaryData() {
+            document.getElementById('sum-row-name').innerText = selectedJobClass ? `${selectedJobClass} Employee` : "Dummy Employee";
+            document.getElementById('sum-row-class').innerText = selectedJobClass || "Manager";
+            document.getElementById('sum-row-code').innerText = selectedJobCode || "Manager";
+            
+            // Format dynamic current time as clock out stamp
+            const d = new Date();
+            let hours = d.getHours();
+            const ampm = hours >= 12 ? 'p' : 'a';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const minutes = d.getMinutes().toString().padStart(2, '0');
+            const formattedEnd = `05/22/2026 ${hours}:${minutes}${ampm}`;
+            document.getElementById('sum-row-end').innerText = formattedEnd;
+
+            // Compute segregated total break counters
+            document.getElementById('sum-row-rest-breaks').innerText = restBreaksCount;
+            document.getElementById('sum-row-rest-breaktime').innerText = formatBreakTime(restBreakSeconds);
+            document.getElementById('sum-row-meal-breaks').innerText = mealBreaksCount;
+            document.getElementById('sum-row-meal-breaktime').innerText = formatBreakTime(mealBreakSeconds);
+
+            // Populate declared tips calculated from Steps 1 & 2
+            document.getElementById('sum-row-tips-declared').innerText = `$ ${(centsTipAmount / 100).toFixed(2)}`;
+            document.getElementById('sum-row-tips-others').innerText = `$ ${(centsTipOthers / 100).toFixed(2)}`;
+
+            // Mirror Open Cash input element data
+            const openCash = parseFloat(document.getElementById('input-open-cash').value) || 100.00;
+            document.getElementById('sum-row-closecash').innerText = `$ ${openCash.toFixed(2)}`;
+        }
+
+        // Final Shift Confirmation Clockout Complete Routine
+        function confirmWizardClockOut() {
+            const finalCashTip = (centsTipAmount / 100).toFixed(2);
+            const finalTipOthers = (centsTipOthers / 100).toFixed(2);
+
+            // Destroy this PIN's active session trace in local RAM
+            if (sessions[currentUserId]) {
+                delete sessions[currentUserId];
+            }
+
+            // Flush temporary working environment states
+            selectedJobClass = "";
+            selectedJobCode = "";
+            breakActive = false;
+            currentBreakType = "";
+            currentBreakSeconds = 0;
+            restBreaksCount = 0;
+            restBreakSeconds = 0;
+            mealBreaksCount = 0;
+            mealBreakSeconds = 0;
+            if (breakTimerInterval) clearInterval(breakTimerInterval);
+
+            // Close Wizard & logout back to login PIN grid
+            closeClockoutWizard();
+            transitionToScreen('login');
+
+            // Success confirmation alert matches your flow charts!
+            showAlert(
+                "Shift Closed Successfully", 
+                `Clocked Out details completed.<br>Declared Cash Tips: $${finalCashTip}<br>Shared Tips to Others: $${finalTipOthers}`, 
+                "success"
+            );
+        }
+
+        // --- LOGOUT HANDLE (Bypasses session termination) ---
+        function performLogout() {
+            // Simply transition to PIN screen without calling delete on sessions[currentUserId]
+            // This preserves their shift details, breaks, and job configurations perfectly!
+            transitionToScreen('login');
+        }
+
+        function triggerTabAction(tabName) {
+            const statusLabel = document.getElementById('status-event-label');
+            statusLabel.innerText = `Active Mode: ${tabName.toUpperCase()}`;
+            setTimeout(() => {
+                statusLabel.innerText = "No Active Events";
+            }, 3000);
+        }
+
+        // Show Terminal details
+        function showInfoOverlay() {
+            showAlert(
+                "PlumPOS Status", 
+                `Terminal: Register 1<br>Host IP: 172.16.2.105<br>DB Port Connection: Success<br>Local Logs: Schedar-Estes`, 
+                "info"
+            );
+        }
+
+        // Help modal details
+        function showHelpModal() {
+            showAlert(
+                "Support Desk", 
+                "Reach out directly to technical help desk or scan badge for instant terminal reset.", 
+                "info"
+            );
+        }
+
+        // --- SYSTEM ALERTS ---
+        function showAlert(title, text, type) {
+            const modal = document.getElementById('custom-alert-modal');
+            const titleEl = document.getElementById('alert-title');
+            const msgEl = document.getElementById('alert-message');
+            const iconContainer = document.getElementById('alert-icon-container');
+            const confirmBtn = modal.querySelector('button');
+            const modalBg = modal.querySelector('div');
+
+            titleEl.innerText = title;
+            msgEl.innerHTML = text;
+
+            if (type === 'minimum-break') {
+                // Light theme matching image_c68c5b.png layout style exactly
+                modalBg.className = "bg-[#F9F9FB] rounded-[24px] border border-gray-100 max-w-lg w-full p-8 text-center shadow-2xl animate-[fadeIn_0.15s_ease-out]";
+                iconContainer.className = "mx-auto flex items-center justify-center w-12 h-12 text-[#F87171] mb-4";
+                iconContainer.innerHTML = `
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                `;
+                titleEl.className = "hidden";
+                msgEl.className = "text-[#4B5563] text-base sm:text-lg font-normal mb-8 leading-relaxed max-w-md mx-auto";
+                confirmBtn.className = "mx-auto block px-12 py-2.5 rounded-full bg-[#A3A3A3] hover:bg-[#8E8E8E] text-white font-medium text-sm transition-colors shadow-sm tracking-wide uppercase";
+                confirmBtn.innerText = "OK";
+            } else {
+                // Restore default dark theme styles
+                modalBg.className = "bg-[#2E3642] border border-[#3E4A5B] rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl animate-[fadeIn_0.15s_ease-out]";
+                titleEl.className = "text-xl font-bold text-white mb-2";
+                msgEl.className = "text-sm text-gray-300 mb-6";
+                confirmBtn.className = "w-full py-3.5 rounded-lg bg-plumBlueButton hover:bg-blue-600 text-white font-bold transition-colors";
+                confirmBtn.innerText = "Confirm";
+
+                if (type === 'success') {
+                    iconContainer.className = "mx-auto flex items-center justify-center w-14 h-14 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 mb-4";
+                    iconContainer.innerHTML = `
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    `;
+                } else if (type === 'warning' || type === 'error') {
+                    iconContainer.className = "mx-auto flex items-center justify-center w-14 h-14 rounded-full bg-red-950/40 border border-red-800/40 text-red-400 mb-4";
+                    iconContainer.innerHTML = `
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    `;
+                } else {
+                    iconContainer.className = "mx-auto flex items-center justify-center w-14 h-14 rounded-full bg-blue-950/40 border border-blue-800/40 text-blue-400 mb-4";
+                    iconContainer.innerHTML = `
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    `;
+                }
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        // Close Alert
+        function closeAlert() {
+            document.getElementById('custom-alert-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
